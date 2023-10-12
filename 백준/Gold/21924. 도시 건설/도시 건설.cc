@@ -1,0 +1,137 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+class DisjointSet
+{
+public:
+    DisjointSet(int n) : _parent(n + 1), _rank(n + 2, 1)
+    {
+        for (int i = 0; i < n + 1; i++)
+            _parent[i] = i;
+    }
+
+    // 니 대장이 누구니?
+    long Find(long u)
+    {
+        if (u == _parent[u])
+            return u;
+
+        return _parent[u] = Find(_parent[u]);
+    }
+
+    // u와 v를 합친다
+    void Merge(long u, long v)
+    {
+        u = Find(u);
+        v = Find(v);
+
+        if (u == v)
+            return;
+
+        if (_rank[u] > _rank[v])
+            swap(u, v);
+
+        // rank[u] <= rank[v] 보장됨
+        _parent[u] = v;
+
+        if (_rank[u] == _rank[v])
+            _rank[v]++;
+    }
+
+private:
+    vector<long> _parent;
+    vector<long> _rank;
+};
+
+struct Vertex
+{
+    // int data;
+};
+
+vector<Vertex> vertices;
+vector<vector<pair<long, long>>> adjacent; // 인접 행렬
+
+struct CostEdge
+{
+    long cost;
+    long u;
+    long v;
+
+    bool operator<(const CostEdge& other) const
+    {
+        return cost < other.cost;
+    }
+};
+
+long Kruskal(vector<CostEdge>& selected)
+{
+    long ret = 0;
+
+    selected.clear();
+
+    vector<CostEdge> edges;
+
+    for (long u = 0; u < adjacent.size(); u++)
+    {
+        for (long v = 0; v < adjacent[u].size(); v++)
+        {
+            if (u > adjacent[u][v].first) 
+                continue;
+
+            long cost = adjacent[u][v].second;
+            edges.push_back(CostEdge{ cost, u, adjacent[u][v].first }); 
+        }
+    }
+
+    sort(edges.begin(), edges.end());
+
+    DisjointSet sets(vertices.size());
+
+    for (CostEdge& edge : edges)
+    {
+        // 같은 그룹이면 스킵 (안 그러면 사이클 발생)
+        if (sets.Find(edge.u) == sets.Find(edge.v))
+            continue;
+
+        // 두 그룹을 합친다
+        sets.Merge(edge.u, edge.v);
+
+        selected.push_back(edge);
+        ret += edge.cost;
+    }
+
+    return ret;
+}
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    long V, E, a, b, c, total = 0;
+    cin >> V >> E;
+
+    vertices.resize(V + 1); // 1부터 V까지 사용
+    adjacent = vector<vector<pair<long, long>>>(V + 1); // 1부터 V까지 사용
+
+    for (long i = 1; i <= E; i++) // 1부터 E까지 사용
+    {
+        cin >> a >> b >> c;
+        adjacent[a].push_back({ b, c }); 
+        adjacent[b].push_back({ a, c }); 
+        total += c;
+    }
+
+    vector<CostEdge> selected;
+    long result = Kruskal(selected);
+
+    if(selected.size() != V - 1)
+    {
+        cout << -1 << endl;
+        return 0;
+    }
+    
+    cout <<  total - result << endl;
+}
