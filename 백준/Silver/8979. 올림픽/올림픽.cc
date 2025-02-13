@@ -3,65 +3,55 @@
 #include <algorithm>
 using namespace std;
 
-struct Country
-{  
-    int conrty_code;
-    int gold;
-    int silver;
-    int bronze;
-    int rank = 1;
+struct Country {  
+    int country_code;
+    int gold, silver, bronze;
+    int rank;
 };
 
-bool cmp(const Country & a, const Country & b) 
-{
-    if(a.gold > b.gold)
-        return true;
-    
-    else if(a.gold == b.gold)
-    {
-        if(a.silver > b.silver)
-            return true;
-        
-        else if(a.silver == b.silver)
-        {
-            if(a.bronze > b.bronze)
-                return true;
-        }
-    }
+// 비교 함수 (금 -> 은 -> 동 내림차순 정렬)
+bool cmp(const Country &a, const Country &b) {
+    if (a.gold != b.gold) 
+        return a.gold > b.gold;
+    if (a.silver != b.silver) 
+        return a.silver > b.silver;
 
-    return false;
+    return a.bronze > b.bronze;
 }
 
+int main() {   
+    ios::sync_with_stdio(false);
+    cin.tie(NULL);
 
-int main()
-{   
-    int N, K; // N : 국가의 수, K : 등수를 알고 싶은 국가
+    int N, K; // N: 국가 수, K: 등수를 알고 싶은 국가
     cin >> N >> K;
 
     vector<Country> v(N);
 
     // 입력 처리
-    for(int i = 0; i < N; i++) 
-        cin >> v[i].conrty_code >> v[i].gold >> v[i].silver >> v[i].bronze;
+    for (int i = 0; i < N; i++) {
+        cin >> v[i].country_code >> v[i].gold >> v[i].silver >> v[i].bronze;
+    }
     
-    sort(v.begin(), v.end(), cmp); // 금 -> 은 -> 동 순서로 내림차순 정렬
+    // 금, 은, 동 순으로 내림차순 정렬
+    sort(v.begin(), v.end(), cmp);
 
-    for(int i = 1; i < N; i++) {
-        if(v[i - 1].gold == v[i].gold) { // 1. 금의 개수가 같은 경우
-            if(v[i - 1].silver == v[i].silver) { // 2. 금의 개수가 같고 은의 개수도 같은 경우
-                if(v[i - 1].bronze == v[i].bronze) { // 3. 금, 은, 동의 개수가 모두 같은 경우
-                    v[i].rank = v[i - 1].rank; // 등수 유지
-                    continue;
-                }
-            }
+    // 등수 계산
+    v[0].rank = 1; // 첫 번째 국가 등수는 1
+    for (int i = 1; i < N; i++) {
+        if (v[i].gold == v[i - 1].gold && v[i].silver == v[i - 1].silver && v[i].bronze == v[i - 1].bronze) {
+            v[i].rank = v[i - 1].rank; // 같은 메달 수면 같은 등수
+        } 
+        
+        else {
+            v[i].rank = i + 1; // 새로운 등수 할당
         }
-
-        v[i].rank = v[i - 1].rank + 1;
     }
 
-    for(int i = 0; i < v.size(); i++) {
-        if(v[i].conrty_code == K) {
-            cout << v[i].rank << endl;
+    // 국가 K의 등수 찾기
+    for (int i = 0; i < N; i++) {
+        if (v[i].country_code == K) {
+            cout << v[i].rank << '\n';
             break;
         }
     }
