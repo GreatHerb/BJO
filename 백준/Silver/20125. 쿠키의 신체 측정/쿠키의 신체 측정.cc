@@ -4,66 +4,70 @@
 
 using namespace std;
 
-int main()
-{
+int main() {
     int N;
     cin >> N;
-
-    string arr[N + 2][N + 2];
-    string cookie;
-
-    // 값 초기화
-    for(int i = 0; i < N + 2; i++) {
-        for(int j = 0; j < N + 2; j ++) {
-            arr[i][j] = "X";
-        }
-    }
+    vector<string> arr(N);
 
     // 입력 받기
-    for(int i = 1; i <= N; i++) {
-        cin >> cookie;
-
-        for(int j = 0; j < cookie.length(); j++) 
-            arr[i][j + 1] = cookie[j];
+    for (int i = 0; i < N; i++) {
+        cin >> arr[i];
     }
 
-    // 심장 찾기
-    int heart_x, heart_y;
+    int heart_x = -1, heart_y = -1;
 
-    for(int i = 1; i < N + 1; i++) {
-        for(int j = 1; j < N + 1; j++) {
-            if(arr[i][j] == "*" && arr[i - 1][j] == "*" && arr[i + 1][j] == "*" && arr[i][j - 1] == "*" && arr[i][j + 1] == "*") {
+    // 심장 찾기
+    for (int i = 1; i < N - 1 && heart_x == -1; i++) {
+        for (int j = 1; j < N - 1; j++) {
+            if (arr[i][j] == '*' &&
+                arr[i - 1][j] == '*' && arr[i + 1][j] == '*' &&
+                arr[i][j - 1] == '*' && arr[i][j + 1] == '*') {
                 heart_x = i;
                 heart_y = j;
+                break;
             }
         }
     }
 
     // 길이 찾기
     int left_arm = 0, right_arm = 0, hip = 0, left_leg = 0, right_leg = 0;
-    
-    for(int i = heart_y - 1; i > 0; i --) {
-        if(arr[heart_x][i] == "*")
-            left_arm ++;
+
+    // 왼팔 길이
+    int y = heart_y - 1;
+    while (y >= 0 && arr[heart_x][y] == '*') {
+        left_arm++;
+        y--;
     }
 
-    for(int i = heart_y + 1; i < N + 1; i ++) {
-        if(arr[heart_x][i] == "*")
-            right_arm ++;
+    // 오른팔 길이
+    y = heart_y + 1;
+    while (y < N && arr[heart_x][y] == '*') {
+        right_arm++;
+        y++;
     }
 
-    for(int i = heart_x; i < N + 1; i ++) {
-        if(arr[i + 1][heart_y] == "*")
-            hip ++;
-
-        if(arr[i + 1][heart_y - 1] == "*")
-            left_leg ++;
-
-        if(arr[i + 1][heart_y + 1] == "*")
-            right_leg ++;
+    // 허리 길이
+    int x = heart_x + 1;
+    while (x < N && arr[x][heart_y] == '*') {
+        hip++;
+        x++;
     }
 
-    cout << heart_x << " " << heart_y << endl;
+    // 왼다리 길이
+    x = heart_x + hip + 1;
+    while (x < N && arr[x][heart_y - 1] == '*') {
+        left_leg++;
+        x++;
+    }
+
+    // 오른다리 길이
+    x = heart_x + hip + 1;
+    while (x < N && arr[x][heart_y + 1] == '*') {
+        right_leg++;
+        x++;
+    }
+
+    cout << heart_x + 1 << " " << heart_y + 1 << endl;
     cout << left_arm << " " << right_arm << " " << hip << " " << left_leg << " " << right_leg << endl;
 
     return 0;
